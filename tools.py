@@ -6,9 +6,16 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from rich import print
+from pydantic import BaseModel, Field
+
 tavily = TavilyClient(api_key=os.getenv("TAVILY_API_KEY"))
 
-@tool
+
+class SearchInput(BaseModel):
+    query: str = Field(description="The search text to look up")
+
+
+@tool("web_search", args_schema=SearchInput)
 def web_search(query : str) -> str:
     """Search the web for recent and reliable information on topic. Returns the Title, URLs and snippets"""
     result = tavily.search(query=query, max_results=2)
@@ -21,7 +28,7 @@ def web_search(query : str) -> str:
 
     return "\n-----\n".join(out)
 
-print(web_search.invoke("What is the recent AI news on hiring of freshers in IT"))
+# print(web_search.invoke("What is the recent AI news on hiring of freshers in IT"))
 
 @tool
 def scrape_url(url : str) -> str:
@@ -37,4 +44,4 @@ def scrape_url(url : str) -> str:
         return f"Could not scrape URL: {str(e)}"
     
 
-print(scrape_url.invoke("https://www.crictracker.com/cricket-news/mi-2027-retentions-released-retained-trade-players-list-ahead-of-ipl-2027-auction/"))
+# print(scrape_url.invoke("https://www.crictracker.com/cricket-news/mi-2027-retentions-released-retained-trade-players-list-ahead-of-ipl-2027-auction/"))

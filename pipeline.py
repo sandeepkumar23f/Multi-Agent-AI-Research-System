@@ -65,3 +65,7 @@ def run_research_pipeline(topic : str) -> dict:
     return state 
 
 # call the function
+
+if __name__ == "__main__":
+    topic = input("\n Enter a research topic : ")
+    run_research_pipeline(topic)
