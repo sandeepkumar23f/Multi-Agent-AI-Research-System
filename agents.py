@@ -17,14 +17,24 @@ llm = ChatGroq(
 
 
 # 1st Agent: finds sources
+
 def build_search_agent():
     return create_agent(
         model=llm,
         tools=[web_search],
-        system_prompt=(
-            "You are a search agent. Use web_search to find recent, reliable sources. "
-            "Return the key findings along with their URLs."
-        ),
+        system_prompt="""
+        You are a web research assistant.
+
+        Your only available tool is web_search.
+
+        Instructions:
+        1. Use web_search to find relevant information.
+        2. Never call web_open, browser, scrape_url,
+           or any other tool.
+        3. Use only URLs returned by web_search.
+        4. Summarize the search results with titles,
+           URLs, and relevant information.
+        """
     )
 
 
