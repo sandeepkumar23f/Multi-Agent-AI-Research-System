@@ -32,10 +32,10 @@ app.get("/api/research", (req, res) => {
     res.write(`data: ${JSON.stringify({ type: "done", data: reportCache.get(cacheKey) })}\n\n`);
     return res.end();
   }
-
-  const py = spawn(PYTHON_PATH, ["-u", RUNNER_PATH, topic], {
-    cwd: path.resolve(__dirname, ".."),
-  });
+    const py = spawn(PYTHON_PATH, ["-u", RUNNER_PATH, topic], {
+        cwd: path.resolve(__dirname, ".."),
+        env: { ...process.env, PYTHONUTF8: "1" },
+    });
 
   let fullOutput = "";
 

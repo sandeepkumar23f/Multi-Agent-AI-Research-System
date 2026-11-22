@@ -4,9 +4,11 @@ import sys
 from contextlib import redirect_stdout
 from pipeline import run_research_pipeline
 
+sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+
 
 class StreamTee(io.TextIOBase):
-    """Forwards live print() lines from pipeline.py immediately while capturing them."""
+    """Forwards live print() lines from pipeline.py immediately in UTF-8."""
     def write(self, s):
         sys.__stdout__.write(s)
         sys.__stdout__.flush()
@@ -21,6 +23,5 @@ if __name__ == "__main__":
     with redirect_stdout(StreamTee()):
         state = run_research_pipeline(topic)
 
-    # Emit final state dictionary with a unique delimiter for Node.js
     print("\n__FINAL_STATE_JSON__")
-    print(json.dumps(state), flush=True)
+    print(json.dumps(state, ensure_ascii=False), flush=True)
