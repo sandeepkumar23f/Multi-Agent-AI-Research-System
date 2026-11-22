@@ -9,17 +9,27 @@ from tools import web_search, scrape_url
 
 load_dotenv()
 
-llm = ChatGroq(
-    model="openai/gpt-oss-120b",
-    max_tokens=3000,
+# Bucket 1 (8,000 TPM): Fast model for tool-calling agents (Search & Reader)
+worker_llm = ChatGroq(
+    model="openai/gpt-oss-20b",
+    max_tokens=1500,
     temperature=0,
+    max_retries=3,
+)
+
+# Bucket 2 (8,000 TPM): Flagship model for final report synthesis & critic audit
+writer_llm = ChatGroq(
+    model="openai/gpt-oss-120b",
+    max_tokens=2000,
+    temperature=0,
+    max_retries=3,
 )
 
 
 # 1st Agent: finds sources
 def build_search_agent():
     return create_agent(
-        model=llm.bind_tools([web_search], tool_choice="auto"),
+        model=worker_llm.bind_tools([web_search], tool_choice="auto"),
         tools=[web_search],
         system_prompt=(
             "You are a research assistant with access to a custom function named `web_search`. "
@@ -28,14 +38,16 @@ def build_search_agent():
         ),
     )
 
+
 # 2nd Agent: reads a page in full
 def build_reader_agent():
     return create_agent(
-        model=llm,
+        model=worker_llm.bind_tools([scrape_url], tool_choice="auto"),
         tools=[scrape_url],
         system_prompt=(
-            "You are a reader agent. Use scrape_url to read the given page in full, "
-            "then summarize the key points and cite the URL."
+            "You are a reader agent with access to a custom function named `scrape_url`. "
+            "Do not use built-in browser tools. Always call `scrape_url(url=...)` to read "
+            "the given page in full, then summarize the key points concisely and cite the URL."
         ),
     )
 
@@ -59,7 +71,7 @@ Structure the report as:
 Be detailed, factual and professional."""),
 ])
 
-writer_chain = writer_prompt | llm | StrOutputParser()
+writer_chain = writer_prompt | writer_llm | StrOutputParser()
 
 
 # Critic chain
@@ -86,5 +98,4 @@ One line verdict:
 ..."""),
 ])
 
-critic_chain = critic_prompt | llm | StrOutputParser()
-
+critic_chain = critic_prompt | writer_llm | StrOutputParser()
