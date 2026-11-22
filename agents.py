@@ -10,7 +10,7 @@ from tools import web_search, scrape_url
 load_dotenv()
 
 llm = ChatGroq(
-    model="llama-3.3-70b-versatile",
+    model="openai/gpt-oss-120b",
     max_tokens=3000,
     temperature=0,
 )
@@ -19,20 +19,14 @@ llm = ChatGroq(
 # 1st Agent: finds sources
 def build_search_agent():
     return create_agent(
-        model=llm,
+        model=llm.bind_tools([web_search], tool_choice="auto"),
         tools=[web_search],
-        system_prompt="""
-        You are a web research assistant.
-
-        Your only available tool is web_search.
-
-        Instructions:
-        1. Use web_search to find relevant information.
-        2. Use only URLs returned by web_search.
-        3. Summarize the search results with titles, URLs, and relevant information.
-        """
+        system_prompt=(
+            "You are a research assistant with access to a custom function named `web_search`. "
+            "Do not use built-in browser tools. Always call the `web_search(query=...)` function "
+            "to gather URLs and snippets, then summarize the results with titles and exact URLs."
+        ),
     )
-
 
 # 2nd Agent: reads a page in full
 def build_reader_agent():
