@@ -10,14 +10,13 @@ from tools import web_search, scrape_url
 load_dotenv()
 
 llm = ChatGroq(
-    model="openai/gpt-oss-120b",
+    model="llama-3.3-70b-versatile",
     max_tokens=3000,
     temperature=0,
 )
 
 
 # 1st Agent: finds sources
-
 def build_search_agent():
     return create_agent(
         model=llm,
@@ -29,11 +28,8 @@ def build_search_agent():
 
         Instructions:
         1. Use web_search to find relevant information.
-        2. Never call web_open, browser, scrape_url,
-           or any other tool.
-        3. Use only URLs returned by web_search.
-        4. Summarize the search results with titles,
-           URLs, and relevant information.
+        2. Use only URLs returned by web_search.
+        3. Summarize the search results with titles, URLs, and relevant information.
         """
     )
 
